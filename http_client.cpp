@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	
-	char* read_buffer = (char*) malloc(sizeof(char) * 100);h
+	read_buffer = (char*) malloc(sizeof(char) * 100);
 
 	int read_error = read_bytes(socket_fd, read_buffer, sizeof(char) * 100);
 	
@@ -107,7 +107,7 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 
 	file = fdopen(socket, "r");
 	
-	if(file < 0) {
+	if(file == NULL) {
 		fprintf(stderr, "Error Opening Socket For Reading");
 		return -1;
 	}
