@@ -20,10 +20,10 @@ int main(int argc, char* argv[]) {
 	int server_port = -1;
 	char* server_name = NULL; 	// host
 	char* server_path = NULL; 	// file
-	
+	char* read_buffer = NULL;
 	int socket_fd;			// socket file descriptor
-	struct sockaddr_in sa;
 
+	struct sockaddr_in sa;
 	struct hostent* site = NULL;
 
 	if (argc != 5) {
@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	
+	// this is slightly bigger than necessary due to %s character which are subbed out. Idk if it matters
 	char* get_request = (char*) malloc((strlen(get_str) + strlen(server_path)) * sizeof(char));	
 
 	if(sprintf(get_request, get_str, server_path) < 0) {
@@ -86,37 +87,40 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	
-	char* read_buffer = (char*) malloc(sizeof(char) * 100);
-	
+	char* read_buffer = (char*) malloc(sizeof(char) * 100);h
+
 	int read_error = read_bytes(socket_fd, read_buffer, sizeof(char) * 100);
 	
 	close(socket_fd);
+
+	free(read_buffer);
 	free(get_request);
 	return read_error;
 }
 
 int read_bytes(int socket, char* buffer, int buff_len) {
-	FILE* file;
+	FILE* file = NULL;
 	int x = 1;
-	char* state_flag;
-	char header_string[14]; // this is going to hold http header
+	char* state_flag = NULL;	// If this == NULL we got anything other than a 200 response
+	char header_string[14]; 	// this is going to hold http header
+	char temp_header[15];
 
 	file = fdopen(socket, "r");
 	
 	if(file < 0) {
 		fprintf(stderr, "Error Opening Socket For Reading");
-		free(buffer);
-		exit(-1);
+		return -1;
 	}
 	
-	char temp_header[16];
-	
 	read(socket, temp_header, 14);
-	temp_header[15] = '\0';
+
 	state_flag = strstr(temp_header, "200 OK");
 
-	if(state_flag == NULL) fprintf(stderr, "%s", temp_header);
-	else printf("%s", temp_header);
+	if(state_flag == NULL)
+		fprintf(stderr, "%s", temp_header);
+	else 
+		printf("%s", temp_header);
+
 
 	while(x != 0) {
 		
@@ -131,7 +135,9 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 		memset(buffer, 0, buff_len);
 
 	}
-		
-	if (x < 0) return -1;
+	
+	fclose(file);
+
+	if (x < 0 || state_flag == NULL) return -1;
 	return 0;
 }
