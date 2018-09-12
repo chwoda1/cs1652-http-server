@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
 int read_bytes(int socket, char* buffer, int buff_len) {
 	FILE* file = NULL;
 	int x = 1;
-	char* state_flag = NULL;	// If this == NULL we got anything other than a 200 response
+	char* state_flag;		// If this == NULL we got anything other than a 200 response
 	char header_string[14]; 	// this is going to hold http header
 	char temp_header[15];
 
@@ -112,11 +112,13 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 		return -1;
 	}
 	
-	read(socket, temp_header, 14);
+	read(socket, temp_header, 15);
 
+	state_flag = (char*) malloc(sizeof(char) * 10);	 // Size of "200 OK" + null term
+	printf("%s\n", temp_header);
 	state_flag = strstr(temp_header, "200 OK");
 
-	if(state_flag == NULL)
+	if (state_flag == NULL)
 		fprintf(stderr, "%s", temp_header);
 	else 
 		printf("%s", temp_header);
@@ -138,6 +140,9 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 	
 	fclose(file);
 
-	if (x < 0 || state_flag == NULL) return -1;
+	if (x < 0 || state_flag == NULL) {
+		free(state_flag);
+		return -1;
+	}
 	return 0;
 }
