@@ -123,11 +123,16 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 		printf("%s", temp_header);
 
 
+	/**
+	  * to parse out http headers 
+	  * split against "\r\n\r\n"
+	  * after this the message should start
+	  **/
 	while(x != 0) {
 		
 		x = read(socket, buffer, buff_len);
 		
-	if(x < 0 || state_flag == NULL) {
+		if(x < 0 || state_flag == NULL) {
 			fprintf(stderr, "%s", buffer);
 		} else {
 			printf("%s", buffer);

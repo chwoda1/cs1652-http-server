@@ -9,16 +9,17 @@
 
 void handle_connection(int);
 
-char ok_response[]  = "HTTP/1.0 200 OK\r\n"             \   
-                        "Content-type: text/plain\r\n"    \
+const char ok_response[]  = "HTTP/1.0 200 OK\r\n"             \   
+                       "Content-type: text/plain\r\n"    \
                         "Content-length: %d \r\n\r\n";
 
-char notok_response[] = "HTTP/1.0 404 FILE NOT FOUND\r\n" \
+const char notok_response[] = "HTTP/1.0 404 FILE NOT FOUND\r\n" \
                         "Content-type: text/html\r\n\r\n" \   
                         "<html><body bgColor=black text=white>\n" \   
                         "<h2>404 FILE NOT FOUND</h2>\n"
                         "</body></html>\n";
 
+const int STREAM_SIZE = 4096;
 
 class ServerFunctions {
 	public:
@@ -99,7 +100,6 @@ int ServerFunctions::listen_socket(int socket) {
 
 int main(int argc, char* argv[]) {
 	struct sockaddr_storage sa;
-	char* stack = NULL;
 	int port = -1;
 
 	ServerFunctions socketObjs;	// CPP Obj
@@ -118,8 +118,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	int socket_fd = socketObjs.setup_socket(port);
-
-	printf("Socket %d Connected on Port: %d\n", socket_fd, port);
 
 	sock_len = sizeof(sa);
 
@@ -141,7 +139,10 @@ int main(int argc, char* argv[]) {
 			handle_connection(connection_fd);
 		}
 
-	}  
+	}
+	
+	close(socket_fd);
+	return 0;
 }
 
 void handle_connection(int incoming_fd) {
@@ -152,7 +153,7 @@ void handle_connection(int incoming_fd) {
 	char* substring = NULL;
 	long long file_length;
 
-	get_header = (char*) malloc(8193);
+	get_header = (char*) malloc(8193); // one byte bigger for null term
 
 	read(incoming_fd, get_header, 8192);
 	strtok_r(get_header, " ", &helper); // extract HTTP
@@ -169,15 +170,15 @@ void handle_connection(int incoming_fd) {
 		fseek(to_return, 0, SEEK_END);
 		file_length = ftell(to_return);	
 		rewind(to_return);
-		char* file_buffer = (char*) malloc(4096);	// send 4kb at a time i guess
+		char* file_buffer = (char*) malloc(STREAM_SIZE);     // send 4kb at a time i guess
 
 		int num_digits = floor(log10(abs(file_length))) + 1; // length of the file_length number
 		sprintf(file_buffer, ok_response, file_length);
 
 		while(send_count) {
-			send(incoming_fd, file_buffer, 4096, 0);
-			memset(file_buffer, 0, 4096);
-			send_count = fread(file_buffer, sizeof(char), 4096, to_return);
+			send(incoming_fd, file_buffer, STREAM_SIZE, 0);
+			memset(file_buffer, 0, STREAM_SIZE);
+			send_count = fread(file_buffer, sizeof(char), STREAM_SIZE, to_return);
 		}
 		
 		free(file_buffer);
