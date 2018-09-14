@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 int read_bytes(int socket, char* buffer, int buflen);
+void detect_end_headers(int);
 
 /**
   * Usage: 
@@ -116,12 +117,9 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 
 	state_flag = (char*) malloc(sizeof(char) * 10);	 // Size of "200 OK" + null term
 	state_flag = strstr(temp_header, "200 OK");
-
-	if (state_flag == NULL)
-		fprintf(stderr, "%s", temp_header);
-	else 
-		printf("%s", temp_header);
-
+	
+	detect_end_headers(socket);
+	
 
 	/**
 	  * to parse out http headers 
@@ -149,4 +147,33 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 		return -1;
 	}
 	return 0;
+}
+
+void detect_end_headers(int socket) {
+	
+	int flag = 0;
+	char current = ' ';
+
+	while(read(socket, & current, 1) > 0) {
+
+		if (current == '\r' && flag == 0) {
+			flag |= 1;
+		} else if(current == '\n' && flag == 1) {
+			flag |= 2;
+		} else if(current == '\r' && flag == 3) {
+			flag |= 4;
+		} else if (current == '\n' && flag == 7) {
+			return;
+		} else {
+			flag &= 0;
+		}
+
+	}
+
+	/**
+	  * Since HTTP Standard says headers have to end with \r\n\r\n
+	  * it's unlikely this will hit. But if it does, we screwed up
+	  **/
+	fprintf(stderr, "Invalid HTTP Protocol");
+	exit(-1);
 }
