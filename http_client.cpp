@@ -115,7 +115,6 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 	read(socket, temp_header, 15);
 
 	state_flag = (char*) malloc(sizeof(char) * 10);	 // Size of "200 OK" + null term
-	printf("%s\n", temp_header);
 	state_flag = strstr(temp_header, "200 OK");
 
 	if (state_flag == NULL)
@@ -128,7 +127,7 @@ int read_bytes(int socket, char* buffer, int buff_len) {
 		
 		x = read(socket, buffer, buff_len);
 		
-		if(x < 0 || state_flag == NULL) {
+	if(x < 0 || state_flag == NULL) {
 			fprintf(stderr, "%s", buffer);
 		} else {
 			printf("%s", buffer);
