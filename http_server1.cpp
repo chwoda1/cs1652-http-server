@@ -186,7 +186,10 @@ void handle_connection(int incoming_fd) {
 	}
 	
 	fclose(fp);
-	fclose(to_return);
+
+	if (to_return != NULL)
+		fclose(to_return);
+
 	free(get_header);
 	get_header = NULL;
 	close(incoming_fd);
