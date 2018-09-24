@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +32,15 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Usage Error: http_client k host port file");
 		return -1;
 	}
-	
+
+	if (toupper(*argv[1]) == 'K') {
+
+	} else if (toupper(*argv[1]) == 'U') {
+
+	} else {
+		exit(-1);
+	}
+
 	server_name = argv[2];
 	server_port = atoi(argv[3]);
 	server_path = argv[4];

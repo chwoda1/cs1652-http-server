@@ -10,15 +10,15 @@
 #include "server.h"
 
 
-void handle_connection(int);
+int handle_connection(int);
 
-const char ok_response[]  = "HTTP/1.0 200 OK\r\n"             \   
-                       "Content-type: text/plain\r\n"    \
-                        "Content-length: %d \r\n\r\n";
+const char ok_response[]  = "HTTP/1.0 200 OK\r\n" \
+                       "Content-type: text/plain\r\n"\
+                        "Content-length: %lld \r\n\r\n";
 
 const char notok_response[] = "HTTP/1.0 404 FILE NOT FOUND\r\n" \
-                        "Content-type: text/html\r\n\r\n" \   
-                        "<html><body bgColor=black text=white>\n" \   
+                        "Content-type: text/html\r\n\r\n" \
+                        "<html><body bgColor=black text=white>\n" \
                         "<h2>404 FILE NOT FOUND</h2>\n"		\
                         "</body></html>\n";
 
@@ -72,13 +72,14 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-void handle_connection(int incoming_fd) {
+int handle_connection(int incoming_fd) {
 	FILE* fp = fdopen(incoming_fd, "rw");
 	FILE* to_return = NULL;
 	char* helper;		// helper for strtok_r
 	char* get_header = NULL;
 	char* substring = NULL;
 	long long file_length;
+	int ok = 1;
 
 	get_header = (char*) malloc(8193); // one byte bigger for null term
 
@@ -90,6 +91,7 @@ void handle_connection(int incoming_fd) {
 
 	if (to_return == NULL) {
 		send(incoming_fd, notok_response,  strlen(notok_response), 0);
+		ok = 0;
 	} else {
 		int send_count = 1;
 
@@ -120,4 +122,10 @@ void handle_connection(int incoming_fd) {
 	free(get_header);
 	get_header = NULL;
 	close(incoming_fd);
+
+	if (ok) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
