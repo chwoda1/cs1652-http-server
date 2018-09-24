@@ -49,6 +49,15 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	if (toupper(*argv[1]) == 'K') {
+		// init kernel stack
+	} else if (toupper(*argv[1]) == 'U') {
+		// init user stack
+	} else {
+		fprintf(stderr, "Error... Unknown Option\n");
+		exit(-1);
+	}
+
 	int socket_fd = socketObjs.setup_socket(port);
 
 	FD_SET(socket_fd, &read_sockets);		// add listening descriptor to set

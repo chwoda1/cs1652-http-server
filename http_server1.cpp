@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,15 @@ int main(int argc, char* argv[]) {
 
 	if (port < 1500) {
 		fprintf(stderr, "You're attempting to use a reserved port");
+		return -1;
+	}
+
+	if (toupper(*argv[1]) == 'K') {
+		// init kernel stack
+	} else if (toupper(*argv[1]) == 'U') {
+		// init user stack
+	} else {
+		fprintf(stderr, "Error... Unknown Option\n");
 		return -1;
 	}
 
