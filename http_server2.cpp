@@ -9,6 +9,10 @@
 #include <math.h>
 
 #include "server.h"
+/* 
+Uncomment for minet
+#include "minet.h"
+*/
 
 int handle_connection(int);
 
@@ -72,7 +76,6 @@ int main(int argc, char* argv[]) {
 	for(;;) {
 
 		read_copy = read_sockets;
-
 		int result = select(largest + 1, &read_copy, 0, 0, 0);
 
 		// we have something to be selected
@@ -85,7 +88,6 @@ int main(int argc, char* argv[]) {
 
 					// this is an incoming connection
 					if (i == socket_fd) {
-						
 						int accept_socket = accept(socket_fd, NULL, NULL);
 
 						if (accept_socket < 0) {
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]) {
 						}
 
 						close(i);
-						FD_CLR(i, &read_copy);	// remove value from fd_set
+						FD_CLR(i, &read_sockets);	// remove value from fd_set
 
 					}
 
